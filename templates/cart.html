@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Your Cart</h2>
+{% if orders %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Image</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.product.name }}</td>
+            <td><img src="{{ url_for('static', filename=order.product.image_path) }}" alt="{{ order.product.name }}" width="50"></td>
+            <td>{{ order.quantity }}</td>
+            <td>${{ "%.2f"|format(order.product.price) }}</td>
+            <td>${{ "%.2f"|format(order.product.price * order.quantity) }}</td>
+            <td>
+                <form action="{{ url_for('remove_from_cart', order_id=order.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5"><strong>Total</strong></td>
+            <td><strong>${{ "%.2f"|format(total_price) }}</strong></td>
+        </tr>
+    </tfoot>
+</table>
+{% else %}
+<p>Your cart is empty.</p>
+{% endif %}
+<a href="{{ url_for('products') }}" class="btn btn-secondary">Continue Shopping</a>
+{% endblock %}
