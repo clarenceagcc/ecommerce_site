@@ -12,9 +12,25 @@
                 <h5 class="card-title">{{ product.name }}</h5>
                 <p class="card-text">{{ product.description }}</p>
                 <p class="card-text"><strong>${{ "%.2f"|format(product.price) }}</strong></p>
+                
+                <!-- Display stock quantity -->
+                <p class="card-text">
+                    <strong>Stock:</strong> 
+                    {% if product.stock > 0 %}
+                        {{ product.stock }}
+                    {% else %}
+                        <span class="text-danger">Out of Stock</span>
+                    {% endif %}
+                </p>
+
+                <!-- Disable Add to Cart button if stock is 0 -->
                 <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
-                    <input type="number" name="quantity" value="1" min="1" class="form-control mb-2">
-                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control mb-2" 
+                        {% if product.stock == 0 %} disabled {% endif %}>
+                    <button type="submit" class="btn btn-primary" 
+                        {% if product.stock == 0 %} disabled {% endif %}>
+                        Add to Cart
+                    </button>
                 </form>
             </div>
         </div>

@@ -11,10 +11,10 @@ def seed_database():
 
     # Add placeholder products
     products = [
-        Product(name="Laptop", description="A high-performance laptop.", price=999.99, image_path="images/laptop.jpg"),
-        Product(name="Smartphone", description="A sleek and modern smartphone.", price=699.99, image_path="images/smartphone.jpg"),
-        Product(name="Headphones", description="Noise-cancelling headphones.", price=199.99, image_path="images/headphones.jpg"),
-        Product(name="Keyboard", description="Mechanical gaming keyboard.", price=129.99, image_path="images/keyboard.jpg"),
+        Product(name="Laptop", description="A high-performance laptop.", price=999.99, image_path="images/laptop.jpg", stock=25),
+        Product(name="Smartphone", description="A sleek and modern smartphone.", price=699.99, image_path="images/smartphone.jpg", stock=25),
+        Product(name="Headphones", description="Noise-cancelling headphones.", price=199.99, image_path="images/headphones.jpg", stock=25),
+        Product(name="Keyboard", description="Mechanical gaming keyboard.", price=129.99, image_path="images/keyboard.jpg", stock=25),
     ]
 
     db.session.add_all(products)

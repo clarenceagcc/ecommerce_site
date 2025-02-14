@@ -37,6 +37,12 @@
         </tr>
     </tfoot>
 </table>
+
+<!-- Checkout Button -->
+<form action="{{ url_for('checkout') }}" method="GET">
+    <button type="submit" class="btn btn-success">Proceed to Checkout</button>
+</form>
+
 {% else %}
 <p>Your cart is empty.</p>
 {% endif %}

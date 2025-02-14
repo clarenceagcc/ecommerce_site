@@ -182,6 +182,42 @@ def delete_product(product_id):
     flash('Product deleted successfully!', 'success')
     return redirect(url_for('admin'))
 
+@app.route('/checkout', methods=['GET'])
+def checkout():
+    return render_template('checkout.html')
+
+@app.route('/confirm_order', methods=['POST'])
+def confirm_order():
+    card_name = request.form.get('card_name')
+    card_number = request.form.get('card_number')
+    expiry_date = request.form.get('expiry_date')
+    cvv = request.form.get('cvv')
+
+    if not (card_name and card_number and expiry_date and cvv):
+        flash("All fields are required!", "danger")
+        return redirect(url_for('checkout'))
+
+    # Get cart items from session or database
+    cart_items = Order.query.all()  # Fetch all cart items for the user
+
+    # Check stock availability before proceeding
+    for item in cart_items:
+        if item.product.stock < item.quantity:
+            flash(f"Not enough stock for {item.product.name}. Available: {item.product.stock}", "danger")
+            return redirect(url_for('cart'))  # Redirect back to cart if stock is insufficient
+
+    # Reduce stock for each product in the cart
+    for item in cart_items:
+        product = item.product
+        product.stock -= item.quantity
+        db.session.add(product)
+
+    # Clear the cart after purchase
+    Order.query.delete()  # Assuming CartItem stores the cart contents
+    db.session.commit()
+
+    flash("Payment successful! Your order has been placed.", "success")
+    return redirect(url_for('home'))  # Redirect to homepage after purchase
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create database tables
