@@ -254,6 +254,59 @@ def stress_test():
 
     return jsonify({"message": f"{test_type.capitalize()} stress test started!"})
 
+# Fetch AWS instance metadata (IMPORTANT THAT THIS ONLY WORKS ON EC2!!!)
+# AWS provides instance metadata via http://169.254.169.254
+# Check https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html
+def get_server_info():
+    try:
+        # First get IMDSv2 token
+        token_response = requests.put(
+            'http://169.254.169.254/latest/api/token',
+            headers={'X-aws-ec2-metadata-token-ttl-seconds': '21600'},
+            timeout=1
+        )
+        token = token_response.text
+        
+        # Add token to headers for subsequent requests
+        headers = {'X-aws-ec2-metadata-token': token}
+        
+        # Get private IP
+        private_ip = requests.get(
+            'http://169.254.169.254/latest/meta-data/local-ipv4',
+            headers=headers,
+            timeout=1
+        ).text
+        
+        # Get availability zone
+        availability_zone = requests.get(
+            'http://169.254.169.254/latest/meta-data/placement/availability-zone',
+            headers=headers,
+            timeout=1
+        ).text
+        
+        # Extract region from availability zone
+        region = availability_zone[:-1]
+        
+        return {
+            "ip": private_ip,
+            "az": availability_zone,
+            "region": region
+        }
+    except requests.exceptions.RequestException as e:
+        # Log the specific error for debugging
+        print(f"Metadata service error: {str(e)}")
+        # Fallback for local testing
+        return {
+            "ip": "127.0.0.1",
+            "az": "local",
+            "region": "local"
+        }
+     
+# Template Context Processor
+@app.context_processor
+def inject_server_info():
+    return {"server": get_server_info()} 
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create database tables
