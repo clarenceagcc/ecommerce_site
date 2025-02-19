@@ -1,10 +1,13 @@
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from extensions import db, login_manager 
 from config import Config
 from models import User, Product, Order 
 from forms import LoginForm, RegistrationForm
 from flask_login import login_required, current_user, logout_user, login_user
 from seed import seed_database
+import requests
+import multiprocessing
+import time
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -218,6 +221,39 @@ def confirm_order():
 
     flash("Payment successful! Your order has been placed.", "success")
     return redirect(url_for('home'))  # Redirect to homepage after purchase
+
+# CPU Stress Test Function
+def stress_cpu(duration):
+    end_time = time.time() + duration
+    while time.time() < end_time:
+        _ = [x**2 for x in range(10000)]  # Heavy computation
+
+# Network Stress Test Function
+def stress_network(url, requests_count):
+    for _ in range(requests_count):
+        try:
+            requests.get(url)
+        except requests.exceptions.RequestException:
+            pass  # Ignore failures
+
+@app.route('/stress_test', methods=['POST'])
+def stress_test():
+    test_type = request.form.get('test_type')
+    duration = int(request.form.get('duration', 10))  # Default 10 seconds
+
+    if test_type == "cpu":
+        process = multiprocessing.Process(target=stress_cpu, args=(duration,))
+        process.start()
+    elif test_type == "network":
+        target_url = request.form.get('target_url', 'http://localhost:5000')  # Default URL
+        requests_count = int(request.form.get('requests_count', 100))  # Default 100 requests
+        process = multiprocessing.Process(target=stress_network, args=(target_url, requests_count))
+        process.start()
+    else:
+        return jsonify({"error": "Invalid test type"}), 400
+
+    return jsonify({"message": f"{test_type.capitalize()} stress test started!"})
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()  # Create database tables
