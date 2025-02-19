@@ -1,13 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    .product-image {
+        width: 100%; /* Set the width to 100% of the card */
+        height: 400px; /* Set a fixed height */
+        object-fit: cover; /* Ensures the image covers the area without stretching */
+    }
+</style>
+
 <h2>Products</h2>
 <div class="row">
     {% for product in products %}
     <div class="col-md-4 mb-4">
         <div class="card">
-            <!-- Load the product image -->
-            <img src="{{ url_for('static', filename=product.image_path) }}" class="card-img-top" alt="{{ product.name }}">
+            <!-- Load the product image with the fixed size class -->
+            <img src="{{ url_for('static', filename=product.image_path) }}" class="card-img-top product-image" alt="{{ product.name }}">
             <div class="card-body">
                 <h5 class="card-title">{{ product.name }}</h5>
                 <p class="card-text">{{ product.description }}</p>
